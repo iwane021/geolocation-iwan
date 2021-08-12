@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Iwan Geolocation</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+	<div class="container">
+    <h2 id="text-center">Isi Lokasi : </h2>
+    <form id="location-form">
+      <input type="text" id="location-input" class="form-control form-control-lg">
+      <br>
+      <button type="submit" class="btn btn-primary btn-block">Submit</button>
+		</form>
+		
+    <div class="card-block px-0" id="formatted-address"></div>
+    <div class="card-block px-0" id="address-components"></div>
+    <div class="card-block px-0" id="geometry"></div>
+	</div>
+	
+	<!-- offline & online notification -->
+	<!-- <div id="offline-notification" class="online">
+		<div class="offline-wrapper bg-danger text-white">
+				<div class="container-fluid">
+				Oops, your internet is disconnected. Please check your signal
+				</div>
+		</div>
+	</div> -->
+
+	<script>
+		// Get location form
+    var locationForm = document.getElementById('location-form');
+    // Listen for submiot
+		locationForm.addEventListener('submit', geolocation);
+		
+		function geolocation(e){
+			// Prevent actual submit
+			e.preventDefault();
+
+			var location = document.getElementById('location-input').value;
+
+			// Optionally the request above could also be done as			
+			axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+				params: {
+					address: location,
+					key: 'AIzaSyAB85w0uXU3dFUdwvbk2YGmtZNNeM3m1gI'
+				}
+			})
+			.then(function (response) {
+				console.log('response = ', response);
+
+				// Display to Element Formatted Address
+				var formattedAddress = response.data.results[0].formatted_address;
+				var formattedAddressOutput = `
+					<h4>Deskripsi :</h4>
+					<ul class="list-group">
+						<li class="list-group-item">${formattedAddress}</li>
+					</ul>
+				`;
+
+				//Display Address Components
+				var addressComponents = response.data.results[0].address_components;
+				
+				var addressComponentsOutput = '<h4>Detil :</h4><ul class="list-group">';
+
+				addressComponents.splice(2, 2); //remove index 2 & 3 from addressComponents
+				for(var i = 0;i < addressComponents.length;i++){
+          addressComponentsOutput += `
+            <li class="list-group-item"><strong>${addressComponents[i].types[0]}</strong>: ${addressComponents[i].long_name}</li>
+          `;
+				}
+				
+				addressComponentsOutput += '</ul>';
+
+
+				//Display Geometry
+				var lat = response.data.results[0].geometry.location.lat;
+				var lng = response.data.results[0].geometry.location.lng;
+				var geometryOutput = `
+					<h4>Koordinat :</h4>
+					<ul class="list-group">
+						<li class="list-group-item"><strong>Latitude</strong>: ${lat}</li>
+						<li class="list-group-item"><strong>Longitude</strong>: ${lng}</li>
+					</ul>
+				`;
+
+				//Put to HTML element
+				document.getElementById('formatted-address').innerHTML = formattedAddressOutput;
+				document.getElementById('address-components').innerHTML = addressComponentsOutput;
+				document.getElementById('geometry').innerHTML = geometryOutput;
+
+			})
+			.catch(function (error) {
+				console.log('error = ', error);
+			});
+		}
+	</script>
+</body>
+</html>
